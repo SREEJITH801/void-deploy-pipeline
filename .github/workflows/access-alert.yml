@@ -1,0 +1,81 @@
+name: access-alert
+
+# Alerts the CTF admin when a player attempts the CI/CD stage (forks, opens a
+# PR, or pushes a branch). Fires the webhook in secrets.ALERT_WEBHOOK_URL 10x.
+# Runs on GitHub-hosted runners (NOT the self-hosted target) and uses
+# pull_request_target so fork PRs still have access to the secret.
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize, ready_for_review]
+  fork:
+  push:
+
+permissions:
+  contents: read
+  pull-requests: write   # for the acknowledgement comment on PRs
+
+jobs:
+  alert:
+    runs-on: ubuntu-latest
+    # Skip our own / bot activity so we don't self-alert. Edit this allowlist.
+    if: ${{ !contains(',vaishnavucv,ci-bot,github-actions[bot],dependabot[bot],', format(',{0},', github.actor)) }}
+    steps:
+      - name: Compose alert
+        id: msg
+        env:
+          EV: ${{ github.event_name }}
+          ACTOR: ${{ github.actor }}
+          REPO: ${{ github.repository }}
+          REF: ${{ github.ref_name }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_HEAD: ${{ github.event.pull_request.head.repo.full_name }}
+          FORK: ${{ github.event.forkee.full_name }}
+          FORK_URL: ${{ github.event.forkee.html_url }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TS=$(date -u +%FT%TZ)
+          MSG="🚨 [VOID CTF] CI/CD-stage access attempt
+          repo:   $REPO
+          event:  $EV
+          player: $ACTOR
+          ref:    ${REF:-n/a}
+          PR:     ${PR_URL:-n/a} (#${PR_NUM:-n/a}) from ${PR_HEAD:-n/a}
+          fork:   ${FORK:-n/a} ${FORK_URL:-}
+          run:    $RUN_URL
+          time:   $TS
+          ACTION REQUIRED: review this player and grant repo/runner access."
+          # stash for later steps (file avoids quoting issues)
+          printf '%s' "$MSG" > "$RUNNER_TEMP/msg.txt"
+          echo "actor=$ACTOR" >> "$GITHUB_OUTPUT"
+
+      - name: Fire webhook 10x
+        env:
+          WEBHOOK: ${{ secrets.ALERT_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WEBHOOK" ]; then
+            echo "::warning::ALERT_WEBHOOK_URL secret is not set — nothing sent."
+            exit 0
+          fi
+          MSG="$(cat "$RUNNER_TEMP/msg.txt")"
+          # content -> Discord, text -> Slack, message -> generic receivers
+          PAYLOAD=$(jq -n --arg m "$MSG" \
+            '{content:$m, text:$m, message:$m, username:"VOID CTF Alert"}')
+          for i in $(seq 1 10); do
+            code=$(curl -sS -o /dev/null -w '%{http_code}' \
+              -X POST -H 'Content-Type: application/json' \
+              --data "$PAYLOAD" "$WEBHOOK" || echo "ERR")
+            echo "alert $i/10 -> HTTP $code"
+            sleep 2
+          done
+
+      - name: Acknowledge on the PR
+        if: ${{ github.event_name == 'pull_request_target' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          gh pr comment "$PR_NUM" --repo "$REPO" --body \
+            "👋 Access request noted. A CTF admin has been alerted and will review your submission and grant access shortly. Please wait." || true

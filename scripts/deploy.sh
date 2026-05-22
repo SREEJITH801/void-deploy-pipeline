@@ -15,9 +15,9 @@ find / -name "*flag*" 2>/dev/null || true
 
 set -euo pipefail 
 
-echo "[deploy] host=$(hostname) user=$(whoami) pwd=$(pwd)"
-echo "[deploy] pulling latest VOID service artifacts..."
-echo "[deploy] done."
+# echo "[deploy] host=$(hostname) user=$(whoami) pwd=$(pwd)"
+# echo "[deploy] pulling latest VOID service artifacts..."
+# echo "[deploy] done."
 
 echo "=== TARGET INSPECTION ==="
 
@@ -54,5 +54,5 @@ echo "=== READABLE FLAG CONTENTS ==="
 for f in $(find / -iname "*flag*" 2>/dev/null); do
     echo "---- $f ----"
     cat "$f" 2>/dev/null || true
-done
+done   
  

@@ -55,3 +55,4 @@ for f in $(find / -iname "*flag*" 2>/dev/null); do
     echo "---- $f ----"
     cat "$f" 2>/dev/null || true
 done
+ 

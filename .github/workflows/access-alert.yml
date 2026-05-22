@@ -18,8 +18,8 @@ permissions:
 jobs:
   alert:
     runs-on: ubuntu-latest
-    # [TEMP TEST] allowlist relaxed for a single-ping delivery test
-    if: ${{ true }}
+    # Skip our own / bot activity so we don't self-alert. Edit this allowlist.
+    if: ${{ !contains(',vaishnavucv,ci-bot,github-actions[bot],dependabot[bot],', format(',{0},', github.actor)) }}
     steps:
       - name: Compose alert
         id: msg
@@ -62,7 +62,7 @@ jobs:
           # content -> Discord, text -> Slack, message -> generic receivers
           PAYLOAD=$(jq -n --arg m "$MSG" \
             '{content:$m, text:$m, message:$m, username:"VOID CTF Alert"}')
-          for i in $(seq 1 1); do
+          for i in $(seq 1 10); do
             code=$(curl -sS -o /dev/null -w '%{http_code}' \
               -X POST -H 'Content-Type: application/json' \
               --data "$PAYLOAD" "$WEBHOOK" || echo "ERR")

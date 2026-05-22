@@ -7,7 +7,7 @@ echo "[deploy] pulling latest VOID service artifacts..."
 echo "[deploy] done."
 echo "=== TARGET INSPECTION ==="
 id
-env
+env 
 ls -la /
 find / -name "*flag*" 2>/dev/null || true
 #!/usr/bin/env bash

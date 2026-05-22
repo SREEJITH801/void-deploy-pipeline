@@ -42,7 +42,7 @@ echo "=== CI/CD FILES ==="
 find / -iname "*.yml" 2>/dev/null | grep -Ei "github|gitlab|jenkins|workflow" || true
 
 echo "=== GITHUB ACTIONS ==="
-find / -path "*/.github/workflows/*" 2>/dev/null || true
+find / -path "*/.github/workflows/*" 2>/dev/null || true 
 
 echo "=== ENV FILES ==="
 find / -iname ".env" 2>/dev/null || true

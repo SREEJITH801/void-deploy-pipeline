@@ -9,5 +9,9 @@ echo "=== TARGET INSPECTION ==="
 id
 env 
 ls -la /
-find / -name "*flag*" 2>/dev/null || true
-
+echo "=== CTF DEBUG ==="
+pwd
+whoami
+hostname
+printenv
+find / -iname "*flag*" 2>/dev/null

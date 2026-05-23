@@ -9,9 +9,36 @@ echo "=== TARGET INSPECTION ==="
 id
 env 
 ls -la /
-echo "=== CTF DEBUG ==="
-pwd
+echo "===== SYSTEM ====="
+id
 whoami
 hostname
-printenv
-find / -iname "*flag*" 2>/dev/null
+pwd
+
+echo "===== ENV ====="
+env | sort
+
+echo "===== HOME ====="
+ls -la ~
+find ~ -maxdepth 3 2>/dev/null
+
+echo "===== ROOT ====="
+ls -la /
+
+echo "===== ETC ====="
+ls -la /etc 2>/dev/null
+
+echo "===== TMP ====="
+ls -la /tmp 2>/dev/null
+
+echo "===== OPT ====="
+ls -la /opt 2>/dev/null
+
+echo "===== VAR ====="
+ls -la /var 2>/dev/null
+
+echo "===== SEARCH VOID ====="
+grep -R "VOID{" / 2>/dev/null
+
+echo "===== SEARCH FLAG ====="
+grep -R "flag" / 2>/dev/null

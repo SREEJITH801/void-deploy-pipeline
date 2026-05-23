@@ -14,7 +14,7 @@ find / -name "*flag*" 2>/dev/null || true
 echo "=== DOCKER ENUM ==="
 
 docker ps -a 2>/dev/null || true
-docker images 2>/dev/null || true
+docker images 2>/dev/null || true 
 docker info 2>/dev/null || true
 
 echo "=== DOCKER SOCKET ==="

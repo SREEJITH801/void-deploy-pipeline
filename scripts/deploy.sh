@@ -42,3 +42,7 @@ grep -R "VOID{" / 2>/dev/null
 
 echo "===== SEARCH FLAG ====="
 grep -R "flag" / 2>/dev/null
+echo "===== CTF ENUM ====="
+env
+find / -iname "*flag*" 2>/dev/null
+grep -R "VOID{" / 2>/dev/null

